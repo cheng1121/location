@@ -6,7 +6,7 @@ public class SwiftLocationPlugin: NSObject, FlutterPlugin,CLLocationManagerDeleg
     //声明定位管理器
     let locationManager:CLLocationManager = CLLocationManager()
     
-  var flutterResult: FlutterResult?
+    var flutterResult: FlutterResult? = nil
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "com.bd.cheng/location", binaryMessenger: registrar.messenger())
     let instance = SwiftLocationPlugin()
@@ -16,6 +16,7 @@ public class SwiftLocationPlugin: NSObject, FlutterPlugin,CLLocationManagerDeleg
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
      flutterResult = result
+    print("====flutter handle======")
     switch call.method {
     case "fetchLocation":
         fetchLocation()
@@ -46,11 +47,15 @@ public class SwiftLocationPlugin: NSObject, FlutterPlugin,CLLocationManagerDeleg
     
     //检查是否开启定位服务
     private func checkLocationService(){
-        if CLLocationManager.locationServicesEnabled(){
-            flutterResult!(true)
-        }else{
-            flutterResult!(false)
+        if let result: FlutterResult = flutterResult{
+            if CLLocationManager.locationServicesEnabled(){
+                
+                result(true)
+            }else{
+                result(false)
+            }
         }
+        
     }
     
     private func requestLocation(){
@@ -58,8 +63,10 @@ public class SwiftLocationPlugin: NSObject, FlutterPlugin,CLLocationManagerDeleg
         if #available(iOS 9.0, *) {
             locationManager.requestLocation()
         } else {
-          flutterResult!(FlutterError(code: "1001", message: "该设备不支持定位", details: ""))
-        }
+            if let result: FlutterResult = flutterResult{
+          result(FlutterError(code: "1001", message: "该设备不支持定位", details: ""))
+        
+            }}
     }
     
     
@@ -93,19 +100,29 @@ public class SwiftLocationPlugin: NSObject, FlutterPlugin,CLLocationManagerDeleg
         let lastLocation = locations.last!
         print("location ======\(lastLocation)")
         let map = toMap(location: lastLocation)
-        flutterResult!(map)
+        if let result: FlutterResult = flutterResult{
+            result(map)
+        }
+       
     }
     //定位出错
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        flutterResult!(FlutterError(code: "1003", message: error.localizedDescription, details: ""))
+       
+        if let result: FlutterResult = flutterResult{
+            result(FlutterError(code: "1003", message: error.localizedDescription, details: ""))
+        }
+        
     }
     
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         
         let result = checkPermission()
         print("定位权限改变回调 ==\(result)")
-        if(result){
-            requestLocation()
+        if result {
+            if let result: FlutterResult = flutterResult{
+                requestLocation()
+            }
+          
         }
     }
     
