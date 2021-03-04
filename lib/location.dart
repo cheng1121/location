@@ -27,11 +27,11 @@ class Location {
     return LocationPlatform.instance.isBackground();
   }
 
-  Future<bool> setBackground({bool enable}) {
+  Future<bool> setBackground(bool enable) {
     return LocationPlatform.instance.setBackground(enable: enable);
   }
 
-  Future<LocationModel> fetchLocation() {
+  Future<LocationModel?> fetchLocation() {
     return LocationPlatform.instance.fetchLocation();
   }
 
@@ -39,7 +39,7 @@ class Location {
     return LocationPlatform.instance.checkLocationService();
   }
 
-  Stream<LocationModel> get onLocation {
+  Stream<LocationModel?> get onLocation {
     return LocationPlatform.instance.onLocation;
   }
 }

@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:location/location.dart';
 
 void main() {
@@ -14,13 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  LocationModel _locationModel;
-
-  @override
-  void initState() {
-    super.initState();
-    // initPlatformState();
-  }
+   LocationModel? _locationModel;
 
   @override
   Widget build(BuildContext context) {
@@ -40,22 +31,23 @@ class _MyAppState extends State<MyApp> {
                   print('是否已开启位置服务.........$opened');
 
                   if (opened) {
-                    final LocationModel model =
+                    final LocationModel? model =
                         await Location.instance.fetchLocation();
-                    print(
-                        'model ======${model.longitude}=====${model.latitude}');
-                    setState(() {
-                      _locationModel = model;
-                    });
+                    if (model != null) {
+                      print(
+                          'model ======${model.longitude}=====${model.latitude}');
+                      setState(() {
+                        _locationModel = model;
+                      });
+                    }
                   }
                 },
                 child: const Text('获取定位'),
               ),
-              if (_locationModel != null)
-                Text(
-                  '位置信息:${_locationModel.toString()}',
-                  textAlign: TextAlign.center,
-                ),
+              Text(
+                '位置信息:${_locationModel?.toString()}',
+                textAlign: TextAlign.center,
+              )
             ],
           ),
         ),

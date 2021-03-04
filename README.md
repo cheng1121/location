@@ -1,5 +1,7 @@
 # location
 
+### 0.0.4
+use null-safety
 
 ### 0.0.3
 修复ios授权通过后，再次启动app时崩溃的问题
