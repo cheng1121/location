@@ -5,17 +5,18 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.*
-import java.util.*
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+///接收flutter发送回来的信息并处理
 class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : MethodChannel.MethodCallHandler {
     private val channelName: String = "com.bd.cheng/location"
     private var channel: MethodChannel = MethodChannel(messenger, channelName)
@@ -94,6 +95,8 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
                     }
                 }
 
+                Log.i("TAG", "fetchLocation: gps: $gps  === network: $network")
+
                 var gpsListener: LocationListener?
                 var networkListener: LocationListener? = null
                 gpsListener = object : LocationListener {
@@ -125,6 +128,11 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
                         }
                         locationManager.removeUpdates(this)
                         networkListener = null
+                        if(!gps && bestLocation != null){
+                            sendResult("1000", bestLocation, result, "")
+                            hasSendResult = true
+                        }
+
                     }
 
                     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -138,7 +146,8 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
                 if (network) {
                     locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, networkListener, null)
                 }
-                delay(10 * 60 * 1000)
+                ///延时10s
+                delay( 10 * 1000)
                 if (!hasSendResult) {
                     sendResult("1000", bestLocation, result, "")
                 }
@@ -157,7 +166,6 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
     }
 
     private fun sendResult(type: String, location: Location?, result: MethodChannel.Result, message: String?) {
-        Log.i("location", "------------------sendResult: $type")
 
         when (type) {
             "1000" -> {
@@ -202,10 +210,10 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
             return true
         }
         //判断是新定位还是旧的定位
-        val TWO_MINUTES = 1000 * 60 * 2
+        val towMinutes = 1000 * 60 * 2
         val timeDelta = location.time - currentBestLocation.time
-        val isSignificantlyNewer: Boolean = timeDelta > TWO_MINUTES
-        val isSignificantlyOlder: Boolean = timeDelta < -TWO_MINUTES
+        val isSignificantlyNewer: Boolean = timeDelta > towMinutes
+        val isSignificantlyOlder: Boolean = timeDelta < -towMinutes
         val isNewer = timeDelta > 0
 
         if (isSignificantlyNewer) {
@@ -274,8 +282,8 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
             return true
         }
 
-        val granted = PermissionChecker
-                .checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val granted = ContextCompat
+                .checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
         return granted == PermissionChecker.PERMISSION_GRANTED;
     }
 }
