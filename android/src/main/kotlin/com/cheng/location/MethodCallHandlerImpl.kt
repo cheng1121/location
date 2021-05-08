@@ -95,8 +95,6 @@ class MethodCallHandlerImpl(context: Context, messenger: BinaryMessenger) : Meth
                     }
                 }
 
-                Log.i("TAG", "fetchLocation: gps: $gps  === network: $network")
-
                 var gpsListener: LocationListener?
                 var networkListener: LocationListener? = null
                 gpsListener = object : LocationListener {
