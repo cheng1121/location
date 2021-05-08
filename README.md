@@ -1,5 +1,10 @@
 # location
 
+### v0.0.5
+- example中添加 运行时权限申请
+- 优化android中的 定位逻辑
+
+
 ### 0.0.4
 use null-safety
 
